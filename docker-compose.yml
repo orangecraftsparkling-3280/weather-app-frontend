@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: nginx:alpine
+    container_name: weather_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/usr/share/nginx/html
