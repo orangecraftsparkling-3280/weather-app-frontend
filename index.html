@@ -4,27 +4,125 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>クリーンお天気ナビ</title>
-    <link rel="stylesheet" href="style.css" />
+    <!-- Tailwind CSSの読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <div class="container">
-      <h1>🌦️ クリーンお天気ナビ</h1>
-      <p>アーキテクチャを意識した設計で、東京の予報を取得します。</p>
-      <button id="fetch-btn">データをダウンロード</button>
+  <!-- 💡 全体の背景はシンプルな薄いグレー（bg-slate-100）にしました -->
+  <body
+    class="m-0 p-5 min-h-screen flex items-center justify-center box-border bg-slate-100 text-slate-800 font-sans"
+  >
+    <!-- 📱 中央に浮かび上がるスマートフォン筐体（ここから携帯デザイン） -->
+    <div
+      class="max-w-[380px] w-full bg-black p-3 rounded-[48px] shadow-[0_25px_60px_rgba(0,0,0,0.25),inset_0_0_4px_2px_rgba(255,255,255,0.2)] border-4 border-zinc-800"
+    >
+      <!-- スマホ画面内部（マズメ時のライトブルー） -->
+      <div
+        class="bg-gradient-to-b from-[#7ba1c7] to-[#b3cde3] rounded-[38px] px-5 pt-7 pb-6 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.15)] text-center"
+      >
+        <!-- スマホ上部のノッチ（Dynamic Island） -->
+        <div
+          class="w-[110px] h-7 bg-black rounded-full mx-auto mb-4 mt-[-12px]"
+        ></div>
 
-      <!-- 💡 リスト表示用の ul タグをここに復活させておきますね -->
-      <ul
-        id="weather-list"
-        style="text-align: left; margin-top: 20px; padding-left: 20px"
-      ></ul>
+        <!-- アプリタイトル -->
+        <h1
+          class="text-xl font-bold text-slate-900 flex items-center justify-center gap-1 mb-0.5 tracking-wider drop-shadow-sm"
+        >
+          🎣 クリーンお天気ナビ
+        </h1>
+        <p class="text-[11px] text-slate-700 font-semibold mb-4">
+          釣り人向け気象ナビ
+        </p>
 
-      <div class="info-box">
-        ファイルが3つに美しく分離されました！<br />
-        検証画面の<strong>「コンソール (Console)」</strong
-        >を開いて、ボタンを押してください。
+        <!-- ☀️ 現在の状況（メイン表示用カード） -->
+        <div
+          class="bg-white/90 rounded-[16px] border border-black/10 p-4 mb-4 shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
+        >
+          <span class="block text-[10px] font-bold text-slate-500 mb-1"
+            >東京 / 現在の状況</span
+          >
+          <div
+            id="weather"
+            class="text-3xl font-extrabold text-blue-600 flex items-center justify-center gap-2"
+          >
+            --
+          </div>
+        </div>
+
+        <!-- 📦 2×2の気象データ小窓（真鍮調ゴールド枠 × ダークメタリック） -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <!-- 気温 -->
+          <div
+            class="relative bg-[#2c323b] text-white p-3 rounded-[8px] border-2 border-[#8e7a52] shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+          >
+            <div
+              class="absolute inset-[2px] border border-[#8e7a52]/40 rounded-[5px] pointer-events-none"
+            ></div>
+            <span
+              class="block text-[10px] text-amber-200 font-medium mb-1 tracking-wider"
+              >現在の気温</span
+            >
+            <span id="temperature" class="text-lg font-bold">--</span>
+          </div>
+
+          <!-- 湿度 -->
+          <div
+            class="relative bg-[#2c323b] text-white p-3 rounded-[8px] border-2 border-[#8e7a52] shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+          >
+            <div
+              class="absolute inset-[2px] border border-[#8e7a52]/40 rounded-[5px] pointer-events-none"
+            ></div>
+            <span
+              class="block text-[10px] text-amber-200 font-medium mb-1 tracking-wider"
+              >湿度</span
+            >
+            <span id="humidity" class="text-lg font-bold">--</span>
+          </div>
+
+          <!-- 風向き -->
+          <div
+            class="relative bg-[#2c323b] text-white p-3 rounded-[8px] border-2 border-[#8e7a52] shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+          >
+            <div
+              class="absolute inset-[2px] border border-[#8e7a52]/40 rounded-[5px] pointer-events-none"
+            ></div>
+            <span
+              class="block text-[10px] text-amber-200 font-medium mb-1 tracking-wider"
+              >風向き</span
+            >
+            <span
+              id="wind-direction"
+              class="text-base font-bold text-emerald-300"
+              >--</span
+            >
+          </div>
+
+          <!-- 風速 -->
+          <div
+            class="relative bg-[#2c323b] text-white p-3 rounded-[8px] border-2 border-[#8e7a52] shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+          >
+            <div
+              class="absolute inset-[2px] border border-[#8e7a52]/40 rounded-[5px] pointer-events-none"
+            ></div>
+            <span
+              class="block text-[10px] text-amber-200 font-medium mb-1 tracking-wider"
+              >風速</span
+            >
+            <span id="wind-speed" class="text-lg font-bold">--</span>
+          </div>
+        </div>
+
+        <!-- 🌊 大波グラデーションボタン -->
+        <button
+          id="fetch-btn"
+          class="w-full bg-gradient-to-r from-[#1d3557] to-[#457b9d] hover:from-[#457b9d] hover:to-[#1d3557] text-white font-bold py-3 px-4 rounded-xl border border-[#8e7a52] shadow-[0_4px_15px_rgba(29,53,87,0.3)] [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)] transition-all duration-300 active:scale-95 text-sm tracking-widest"
+        >
+          最新の気象情報を取得
+        </button>
       </div>
     </div>
 
+    <!-- JavaScriptファイルの読み込み -->
     <script src="app.js" defer></script>
   </body>
 </html>
