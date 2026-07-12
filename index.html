@@ -28,20 +28,24 @@
             📍 <span id="location-name">場所を選択してください</span>
           </div>
         </div>
+
+        <!-- コンテナ：PCでは max-w で制限しつつ、ボタンは右側に寄る -->
         <div
           class="flex items-center gap-2 bg-white/40 p-2 rounded-2xl border border-white/50 w-full md:w-auto"
         >
           <select
             id="location-select"
-            class="flex-1 p-3 bg-transparent border-none outline-none text-slate-800 font-bold cursor-pointer"
+            class="flex-1 p-3 bg-transparent border-none outline-none text-slate-800 font-bold cursor-pointer md:max-w-xs"
           >
             <option value="">場所を選択...</option>
           </select>
+
           <button
             id="geo-btn"
             class="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/30 text-sm whitespace-nowrap"
           >
-            📍 現在地
+            <span class="sm:hidden">📍</span>
+            <span class="hidden sm:inline">📍 現在地</span>
           </button>
         </div>
       </div>
@@ -57,11 +61,13 @@
             >
               --
             </div>
-            <div class="flex flex-row items-center justify-center gap-4">
-              <div id="weather-icon" class="text-6xl"></div>
+            <div
+              class="flex flex-row items-center justify-center gap-4 overflow-hidden"
+            >
+              <div id="weather-icon" class="text-6xl shrink-0"></div>
               <div
                 id="temperature"
-                class="text-8xl font-black text-slate-900 tracking-tighter"
+                class="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter"
               >
                 --°C
               </div>
