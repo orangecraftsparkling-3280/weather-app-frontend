@@ -1,6 +1,6 @@
 class WeatherService {
   async getCurrentWeather(lat, lon) {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=Asia%2FTokyo`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("API通信エラー");
     return await response.json();
@@ -20,6 +20,14 @@ class WeatherService {
       console.error("住所取得エラー:", e);
       return null;
     }
+  }
+
+  async getCurrentWeather(lat, lon) {
+    // daily に気温の最大・最小、天気コードを追加
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("API通信エラー");
+    return await response.json();
   }
 
   getWeatherDescription(code) {
@@ -102,6 +110,9 @@ class WeatherApp {
     try {
       const data = await this.service.getCurrentWeather(lat, lon);
       const curr = data.current;
+      const daily = data.daily;
+
+      // 現在の天気表示
       document.getElementById("weather").textContent =
         this.service.getWeatherDescription(curr.weather_code);
       document.getElementById("temperature").textContent =
@@ -114,11 +125,33 @@ class WeatherApp {
         `${curr.wind_speed_10m} km/h`;
       document.getElementById("weather-icon").textContent =
         this.service.getWeatherIcon(curr.weather_code);
-      document.getElementById("weather-icon").textContent =
-        this.service.getWeatherIcon(curr.weather_code);
-      // 【追加】ここで背景を更新する
+
       this.updateBackgroundEffect(curr.weather_code);
+
+      // 週間予報の描画（tryブロックの中に移動）
+      const listEl = document.getElementById("forecast-list");
+      listEl.innerHTML = "";
+
+      daily.time.forEach((date, i) => {
+        const icon = this.service.getWeatherIcon(daily.weather_code[i]);
+        const max = daily.temperature_2m_max[i];
+        const min = daily.temperature_2m_min[i];
+        const dayName = new Date(date).toLocaleDateString("ja-JP", {
+          weekday: "short",
+        });
+
+        const item = document.createElement("div");
+        item.className =
+          "flex items-center justify-between px-4 py-2 bg-white/30 rounded-lg";
+        item.innerHTML = `
+          <span class="font-bold">${dayName}</span>
+          <span class="text-2xl">${icon}</span>
+          <span class="text-sm">${max}°C / ${min}°C</span>
+        `;
+        listEl.appendChild(item);
+      });
     } catch (error) {
+      console.error(error); // エラー内容をコンソールに表示
       alert("情報の取得に失敗しました");
     }
   }
@@ -206,5 +239,4 @@ class WeatherApp {
     );
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => new WeatherApp());
