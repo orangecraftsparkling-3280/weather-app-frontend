@@ -24,33 +24,59 @@ class WeatherService {
 
   getWeatherDescription(code) {
     const descriptions = {
-      0: "☀️ 快晴",
-      1: "🌤️ 晴れ",
-      2: "⛅ 晴れ時々曇り",
-      3: "☁️ 曇り",
-      45: "🌫️ 霧",
-      48: "🌫️ 霧（霧氷）",
-      51: "🌦️ 小雨",
-      53: "🌧️ 雨",
-      55: "🌧️ 強い雨",
-      61: "🌦️ 小雨",
-      63: "🌧️ 雨",
-      65: "🌧️ 激しい雨",
-      71: "❄️ 小雪",
-      73: "❄️ 雪",
-      75: "❄️ 大雪",
-      80: "🌦️ にわか雨",
-      81: "🌧️ にわか雨",
-      82: "⛈️ 激しいにわか雨",
-      95: "⛈️ 雷雨",
+      0: "快晴",
+      1: "晴れ",
+      2: "晴れ時々曇り",
+      3: "曇り",
+      45: "霧",
+      48: "霧（霧氷）",
+      51: "小雨",
+      53: "雨",
+      55: "強い雨",
+      61: "小雨",
+      63: "雨",
+      65: "激しい雨",
+      71: "小雪",
+      73: "雪",
+      75: "大雪",
+      80: "にわか雨",
+      81: "にわか雨",
+      82: "激しいにわか雨",
+      95: "雷雨",
     };
     return descriptions[code] || "☁️ 気象情報";
+  }
+
+  getWeatherIcon(code) {
+    const icons = {
+      0: "☀️",
+      1: "🌤️",
+      2: "⛅",
+      3: "☁️",
+      45: "🌫️",
+      48: "🌫️",
+      51: "🌦️",
+      53: "🌧️",
+      55: "🌧️",
+      61: "🌦️",
+      63: "🌧️",
+      65: "🌧️",
+      71: "❄️",
+      73: "❄️",
+      75: "❄️",
+      80: "🌦️",
+      81: "🌧️",
+      82: "⛈️",
+      95: "⛈️",
+    };
+    return icons[code] || "❓";
   }
 }
 
 class WeatherApp {
   constructor() {
     this.service = new WeatherService();
+    this.bodyEl = document.getElementById("app-body");
     this.select = document.getElementById("location-select");
     this.fetchBtn = document.getElementById("fetch-btn");
     this.geoBtn = document.getElementById("geo-btn");
@@ -86,9 +112,59 @@ class WeatherApp {
         `${curr.apparent_temperature}°C`;
       document.getElementById("wind-speed").textContent =
         `${curr.wind_speed_10m} km/h`;
+      document.getElementById("weather-icon").textContent =
+        this.service.getWeatherIcon(curr.weather_code);
+      document.getElementById("weather-icon").textContent =
+        this.service.getWeatherIcon(curr.weather_code);
+      // 【追加】ここで背景を更新する
+      this.updateBackgroundEffect(curr.weather_code);
     } catch (error) {
       alert("情報の取得に失敗しました");
     }
+  }
+
+  updateBackgroundEffect(code) {
+    // 既存の背景関連のクラスをすべて削除
+    this.bodyEl.className =
+      "min-h-screen flex items-center justify-center p-4 transition-all duration-1000";
+
+    // Tailwindのクラスを直接付与
+    if (code === 0 || code === 1)
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-yellow-100",
+        "to-yellow-400",
+      );
+    else if (code === 2 || code === 3)
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-slate-200",
+        "to-slate-500",
+      );
+    else if (code >= 51 && code <= 65)
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-blue-200",
+        "to-blue-600",
+      );
+    else if (code >= 71 && code <= 77)
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-sky-100",
+        "to-blue-200",
+      );
+    else if (code >= 95)
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-purple-300",
+        "to-indigo-900",
+      );
+    else
+      this.bodyEl.classList.add(
+        "bg-gradient-to-br",
+        "from-blue-100",
+        "to-indigo-200",
+      );
   }
 
   handleSelect() {

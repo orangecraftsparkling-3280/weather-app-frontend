@@ -4,66 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>天気予報ステーション</title>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
-    <div
-      class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-6 border border-slate-100"
-    >
-      <h1 class="text-xl font-bold text-slate-800">天気予報ステーション</h1>
-
-      <select
-        id="location-select"
-        class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-400 outline-none transition-all"
-      ></select>
-      <div class="location-selector">
-        <!-- 追加: 現在地を取得するボタン -->
+  <body
+    id="app-body"
+    class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex items-center justify-center p-4"
+  >
+<div class="w-full max-w-md glass rounded-[2rem] shadow-2xl p-8 space-y-8 border border-white/50">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">
+          Weather Station
+        </h1>
+        <div
+          id="current-location-display"
+          class="flex items-center text-blue-600 font-bold text-xs bg-blue-500/10 px-3 py-1 rounded-full w-fit"
+        >
+          📍 <span id="location-name">場所を選択してください</span>
+        </div>
+      </div>
+      <div class="text-center py-2">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <!-- アイコン用の箱 -->
+          <!-- 文字用の箱 -->
+          <div
+            id="weather"
+            class="text-sm font-bold text-blue-500 uppercase tracking-widest"
+          >
+            --
+          </div>
+        </div>
+        <div class="flex flex-row items-center justify-center gap-4">
+          <div id="weather-icon" class="text-6xl"></div>
+          <div
+            id="temperature"
+            class="text-8xl font-black text-slate-900 tracking-tighter"
+          >
+            --°C
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div
+          class="bg-white/40 p-4 rounded-2xl border border-white/50 text-center"
+        >
+          <div
+            class="text-[10px] uppercase text-slate-500 font-bold tracking-wider mb-1"
+          >
+            湿度
+          </div>
+          <div id="humidity" class="font-bold text-slate-800">-</div>
+        </div>
+        <div
+          class="bg-white/40 p-4 rounded-2xl border border-white/50 text-center"
+        >
+          <div
+            class="text-[10px] uppercase text-slate-500 font-bold tracking-wider mb-1"
+          >
+            体感
+          </div>
+          <div id="apparent-temp" class="font-bold text-slate-800">-</div>
+        </div>
+        <div
+          class="bg-white/40 p-4 rounded-2xl border border-white/50 col-span-2 text-center"
+        >
+          <div
+            class="text-[10px] uppercase text-slate-500 font-bold tracking-wider mb-1"
+          >
+            風速
+          </div>
+          <div id="wind-speed" class="font-bold text-slate-800">-</div>
+        </div>
+      </div>
+      <div class="space-y-3">
         <button
           id="geo-btn"
-          class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-900 transition-all active:scale-95 shadow-lg"
+          class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 active:scale-95"
         >
-          📍 現在地から取得
+          📍 現在地で更新
+        </button>
+        <select
+          id="location-select"
+          class="w-full p-4 border border-white/50 rounded-2xl bg-white/30 outline-none focus:ring-2 focus:ring-blue-400"
+        ></select>
+        <button
+          id="fetch-btn"
+          class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-slate-900 transition-all active:scale-95 shadow-lg"
+        >
+          リストから更新
         </button>
       </div>
-      <div
-        id="current-location-display"
-        style="margin-top: 10px; font-weight: bold"
-      >
-        現在の表示：---
-      </div>
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-slate-500">天気</span
-          ><span id="weather" class="font-bold text-slate-700">-</span>
-        </div>
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-slate-500">気温</span
-          ><span id="temperature" class="font-bold text-slate-700">-</span>
-        </div>
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-slate-500">湿度</span><br />
-          <span id="humidity" class="font-bold text-slate-700">-</span>
-        </div>
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-slate-500">体感温度</span><br />
-          <span id="apparent-temp" class="font-bold text-slate-700">-</span>
-        </div>
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-slate-500">風速</span><br />
-          <span id="wind-speed" class="font-bold text-slate-700">-</span>
-        </div>
-      </div>
-
-      <button
-        id="fetch-btn"
-        class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-900 transition-all active:scale-95 shadow-lg"
-      >
-        最新の情報を取得
-      </button>
     </div>
-
-    <!-- 読み込み順序を厳守 -->
     <script src="locations.js"></script>
     <script src="app.js"></script>
   </body>
