@@ -8,7 +8,6 @@ class WeatherService {
 
   getWeatherDescription(code) {
     const descriptions = {
-
       0: "☀️ 快晴",
       1: "🌤️ 晴れ",
       2: "⛅ 晴れ時々曇り",
@@ -37,10 +36,12 @@ class WeatherApp {
   constructor() {
     this.service = new WeatherService();
     this.select = document.getElementById("location-select");
-    this.btn = document.getElementById("fetch-btn");
+    this.fetchBtn = document.getElementById("fetch-btn");
+    this.geoBtn = document.getElementById("geo-btn");
 
     this.init();
-    this.btn.addEventListener("click", () => this.update());
+    this.fetchBtn.addEventListener("click", () => this.handleSelect());
+    this.geoBtn.addEventListener("click", () => this.handleGeolocation());
   }
 
   init() {
@@ -52,23 +53,48 @@ class WeatherApp {
     });
   }
 
-  async update() {
-    const [lat, lon] = this.select.value.split(",");
+  // 共通の表示更新処理
+  async updateUI(lat, lon) {
     try {
       const data = await this.service.getCurrentWeather(lat, lon);
+      const curr = data.current;
       document.getElementById("weather").textContent =
-        this.service.getWeatherDescription(data.current.weather_code);
+        this.service.getWeatherDescription(curr.weather_code);
       document.getElementById("temperature").textContent =
-        `${data.current.temperature_2m}°C`;
+        `${curr.temperature_2m}°C`;
       document.getElementById("humidity").textContent =
-        `${data.current.relative_humidity_2m}%`;
+        `${curr.relative_humidity_2m}%`;
       document.getElementById("apparent-temp").textContent =
-        `${data.current.apparent_temperature}°C`;
+        `${curr.apparent_temperature}°C`;
       document.getElementById("wind-speed").textContent =
-        `${data.current.wind_speed_10m} km/h`;
+        `${curr.wind_speed_10m} km/h`;
     } catch (error) {
       alert("情報の取得に失敗しました");
     }
+  }
+
+  // セレクトボックスからの取得
+  handleSelect() {
+    const [lat, lon] = this.select.value.split(",");
+    this.updateUI(lat, lon);
+  }
+
+  // 現在地からの取得
+  handleGeolocation() {
+    if (!navigator.geolocation)
+      return alert("ブラウザが位置情報に対応していません。");
+
+    this.geoBtn.textContent = "⏳ 取得中...";
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        this.updateUI(pos.coords.latitude, pos.coords.longitude);
+        this.geoBtn.textContent = "📍 現在地";
+      },
+      () => {
+        alert("位置情報の取得に失敗しました。");
+        this.geoBtn.textContent = "📍 現在地";
+      },
+    );
   }
 }
 
