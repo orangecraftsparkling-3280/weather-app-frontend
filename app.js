@@ -8,26 +8,14 @@ class WeatherService {
 
   async getAddress(lat, lon) {
     try {
-      const url = `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lon}`;
-      const response = await fetch(url);
+      const response = await fetch(
+        `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lon}`,
+      );
       const data = await response.json();
-
-      if (data.results) {
-        return data.results.muniNm || data.results.lv01Nm || "場所不明";
-      }
-      return null;
-    } catch (e) {
-      console.error("住所取得エラー:", e);
+      return data.results ? data.results.muniNm || data.results.lv01Nm : null;
+    } catch {
       return null;
     }
-  }
-
-  async getCurrentWeather(lat, lon) {
-    // daily に気温の最大・最小、天気コードを追加
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("API通信エラー");
-    return await response.json();
   }
 
   getWeatherDescription(code) {
@@ -37,7 +25,7 @@ class WeatherService {
       2: "晴れ時々曇り",
       3: "曇り",
       45: "霧",
-      48: "霧（霧氷）",
+      48: "霧",
       51: "小雨",
       53: "雨",
       55: "強い雨",
@@ -49,33 +37,37 @@ class WeatherService {
       75: "大雪",
       80: "にわか雨",
       81: "にわか雨",
-      82: "激しいにわか雨",
+      82: "激しい雨",
       95: "雷雨",
+      96: "雷雨",
+      99: "激しい雷雨",
     };
-    return descriptions[code] || "☁️ 気象情報";
+    return descriptions[code] || "気象情報";
   }
 
   getWeatherIcon(code) {
     const icons = {
-      0: "☀️",
-      1: "🌤️",
-      2: "⛅",
-      3: "☁️",
+      0: "☀️", // 快晴
+      1: "🌤️", // 晴れ
+      2: "⛅", // 晴れ時々曇り
+      3: "☁️", // 曇り
       45: "🌫️",
-      48: "🌫️",
+      48: "🌫️", // 霧
       51: "🌦️",
       53: "🌧️",
-      55: "🌧️",
+      55: "🌧️", // 小雨・雨・強い雨
       61: "🌦️",
       63: "🌧️",
-      65: "🌧️",
+      65: "🌧️", // 雨
       71: "❄️",
       73: "❄️",
-      75: "❄️",
+      75: "❄️", // 雪
       80: "🌦️",
       81: "🌧️",
-      82: "⛈️",
+      82: "⛈️", // にわか雨
       95: "⛈️",
+      96: "⛈️",
+      99: "⛈️", // 雷雨
     };
     return icons[code] || "❓";
   }
@@ -86,12 +78,11 @@ class WeatherApp {
     this.service = new WeatherService();
     this.bodyEl = document.getElementById("app-body");
     this.select = document.getElementById("location-select");
-    this.fetchBtn = document.getElementById("fetch-btn");
     this.geoBtn = document.getElementById("geo-btn");
-    this.locationDisplay = document.getElementById("current-location-display");
+    this.locationDisplay = document.getElementById("location-name");
 
     this.init();
-    this.fetchBtn.addEventListener("click", () => this.handleSelect());
+    this.select.addEventListener("change", () => this.handleSelect());
     this.geoBtn.addEventListener("click", () => this.handleGeolocation());
   }
 
@@ -106,13 +97,20 @@ class WeatherApp {
     }
   }
 
+  handleSelect() {
+    const selectedOption = this.select.options[this.select.selectedIndex];
+    if (!selectedOption.value) return;
+    const [lat, lon] = selectedOption.value.split(",");
+    this.updateUI(lat, lon);
+    this.locationDisplay.textContent = selectedOption.text;
+  }
+
   async updateUI(lat, lon) {
     try {
       const data = await this.service.getCurrentWeather(lat, lon);
-      const curr = data.current;
-      const daily = data.daily;
+      const { current: curr, daily } = data;
+      this.updateBackgroundEffect(curr.weather_code);
 
-      // 現在の天気表示
       document.getElementById("weather").textContent =
         this.service.getWeatherDescription(curr.weather_code);
       document.getElementById("temperature").textContent =
@@ -125,43 +123,31 @@ class WeatherApp {
         `${curr.wind_speed_10m} km/h`;
       document.getElementById("weather-icon").textContent =
         this.service.getWeatherIcon(curr.weather_code);
+      document.getElementById("weather").textContent =
+        this.service.getWeatherDescription(curr.weather_code);
 
-      this.updateBackgroundEffect(curr.weather_code);
-
-      // 週間予報の描画（tryブロックの中に移動）
       const listEl = document.getElementById("forecast-list");
-      listEl.innerHTML = "";
-
-      daily.time.forEach((date, i) => {
-        const icon = this.service.getWeatherIcon(daily.weather_code[i]);
-        const max = daily.temperature_2m_max[i];
-        const min = daily.temperature_2m_min[i];
-        const dayName = new Date(date).toLocaleDateString("ja-JP", {
-          weekday: "short",
-        });
-
-        const item = document.createElement("div");
-        item.className =
-          "flex items-center justify-between px-4 py-2 bg-white/30 rounded-lg";
-        item.innerHTML = `
-          <span class="font-bold">${dayName}</span>
-          <span class="text-2xl">${icon}</span>
-          <span class="text-sm">${max}°C / ${min}°C</span>
-        `;
-        listEl.appendChild(item);
-      });
-    } catch (error) {
-      console.error(error); // エラー内容をコンソールに表示
-      alert("情報の取得に失敗しました");
+      listEl.innerHTML = daily.time
+        .map(
+          (date, i) => `
+        <div class="flex items-center justify-between px-4 py-2 bg-white/30 rounded-xl">
+          <span class="font-bold">${new Date(date).toLocaleDateString("ja-JP", { weekday: "short" })}</span>
+          <span class="text-xl">${this.service.getWeatherIcon(daily.weather_code[i])}</span>
+          <span class="text-sm">${daily.temperature_2m_max[i]}° / ${daily.temperature_2m_min[i]}°</span>
+        </div>
+      `,
+        )
+        .join("");
+    } catch {
+      alert("取得失敗");
     }
   }
-
   updateBackgroundEffect(code) {
-    // 既存の背景関連のクラスをすべて削除
+    // 既存の背景関連のクラスをすべてリセット
     this.bodyEl.className =
       "min-h-screen flex items-center justify-center p-4 transition-all duration-1000";
 
-    // Tailwindのクラスを直接付与
+    // 天気コードに基づいてクラスを付与
     if (code === 0 || code === 1)
       this.bodyEl.classList.add(
         "bg-gradient-to-br",
@@ -199,44 +185,15 @@ class WeatherApp {
         "to-indigo-200",
       );
   }
-
-  handleSelect() {
-    const selectedOption = this.select.options[this.select.selectedIndex];
-    const [lat, lon] = selectedOption.value.split(",");
-
-    this.updateUI(lat, lon);
-    this.locationDisplay.textContent = `現在の表示：${selectedOption.text}`;
-  }
-
   async handleGeolocation() {
-    if (!navigator.geolocation)
-      return alert("ブラウザが位置情報に対応していません。");
-
-    this.geoBtn.textContent = "⏳ 取得中...";
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        // asyncを追加
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-
-        this.updateUI(lat, lon);
-
-        // APIを呼び出して住所を取得
-        const address = await this.service.getAddress(lat, lon);
-
-        // 住所が取れたら市町村名を表示、取れなければ緯度経度を表示
-        const locationText = address
-          ? address
-          : `緯度:${lat.toFixed(2)}, 経度:${lon.toFixed(2)}`;
-        this.locationDisplay.textContent = `現在の表示：${locationText}`;
-
-        this.geoBtn.textContent = "📍 現在地";
-      },
-      () => {
-        alert("位置情報の取得に失敗しました。");
-        this.geoBtn.textContent = "📍 現在地";
-      },
-    );
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      this.updateUI(pos.coords.latitude, pos.coords.longitude);
+      const addr = await this.service.getAddress(
+        pos.coords.latitude,
+        pos.coords.longitude,
+      );
+      this.locationDisplay.textContent = addr || "現在地";
+    });
   }
 }
 document.addEventListener("DOMContentLoaded", () => new WeatherApp());
