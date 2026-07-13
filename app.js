@@ -86,6 +86,24 @@ class WeatherApp {
     this.geoBtn.addEventListener("click", () => this.handleGeolocation());
   }
 
+  // 日付フォーマット用ヘルパー
+  formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+      weekday: "short",
+    });
+  }
+
+  // 今日の日付をセットするメソッド
+  updateTodayDate() {
+    const todayDateEl = document.getElementById("today-date");
+    if (todayDateEl) {
+      todayDateEl.textContent = this.formatDate(new Date());
+    }
+  }
+
   init() {
     if (typeof JAPAN_LOCATIONS !== "undefined") {
       JAPAN_LOCATIONS.forEach((loc) => {
@@ -109,6 +127,10 @@ class WeatherApp {
     try {
       const data = await this.service.getCurrentWeather(lat, lon);
       const { current: curr, daily } = data;
+
+      // 日付の更新
+      this.updateTodayDate();
+
       this.updateBackgroundEffect(curr.weather_code);
 
       document.getElementById("weather").textContent =
@@ -123,15 +145,13 @@ class WeatherApp {
         `${curr.wind_speed_10m} km/h`;
       document.getElementById("weather-icon").textContent =
         this.service.getWeatherIcon(curr.weather_code);
-      document.getElementById("weather").textContent =
-        this.service.getWeatherDescription(curr.weather_code);
 
       const listEl = document.getElementById("forecast-list");
       listEl.innerHTML = daily.time
         .map(
           (date, i) => `
         <div class="flex items-center justify-between px-4 py-2 bg-white/30 rounded-xl">
-          <span class="font-bold">${new Date(date).toLocaleDateString("ja-JP", { weekday: "short" })}</span>
+          <span class="font-bold">${this.formatDate(date)}</span>
           <span class="text-xl">${this.service.getWeatherIcon(daily.weather_code[i])}</span>
           <span class="text-sm">${daily.temperature_2m_max[i]}° / ${daily.temperature_2m_min[i]}°</span>
         </div>

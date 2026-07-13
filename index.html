@@ -49,7 +49,7 @@
           </button>
         </div>
       </div>
-
+      <div id="today-date" class="text-sm text-slate-500 font-bold"></div>
       <!-- メインコンテンツ：2カラム -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- 左：現在データ -->
@@ -63,10 +63,10 @@
             </div>
             <div
               class="flex flex-row items-center justify-center gap-4 overflow-hidden"
-            >
+              >
               <div id="weather-icon" class="text-6xl shrink-0"></div>
               <div
-                id="temperature"
+              id="temperature"
                 class="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter"
               >
                 --°C
@@ -110,6 +110,7 @@
         <!-- 右：週間予報 -->
         <div class="md:border-l border-white/30 md:pl-8">
           <h3 class="font-bold text-slate-700 mb-4">週間予報</h3>
+          <span class="date-label text-sm font-semibold text-slate-600" id="daily-date-0"></span>
           <div id="forecast-list" class="space-y-2"></div>
         </div>
       </div>
