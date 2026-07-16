@@ -291,7 +291,21 @@ class WeatherApp {
       this.locationDisplay.textContent = cityName;
 
       if (addr) {
-        console.log(`Laravelに「${cityName}」を登録します...`);
+        // ★ すでにセレクトボックスの中に、同じ地名の選択肢が存在するかチェック
+        const isAlreadyRegistered = Array.from(this.select.options).some(
+          (opt) => opt.textContent === cityName,
+        );
+
+        if (isAlreadyRegistered) {
+          console.log(
+            `「${cityName}」はすでに登録済みのため、サーバーへの登録をスキップします。`,
+          );
+          // すでにリストにあるので、その値（緯度,経度）を選択状態にする
+          this.select.value = `${lat},${lon}`;
+          return; // ここで処理を終了（POST送信しない）
+        }
+
+        console.log(`「${cityName}」を登録します...`);
         // 第3・第4引数に経緯度を渡して登録要請
         const result = await this.service.registerLocation(
           cityName,
@@ -300,14 +314,14 @@ class WeatherApp {
           lon,
         );
         if (result) {
-          console.log("Laravelへの登録が成功しました:", result);
+          console.log("登録が成功しました:", result);
 
           await this.init();
 
           // 新しく登録された地点を選択状態にする
           this.select.value = `${lat},${lon}`;
         } else {
-          console.warn("Laravelへの登録に失敗しました");
+          console.warn("登録に失敗しました");
         }
       }
     });
