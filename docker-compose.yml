@@ -1,6 +1,15 @@
-version: '3.8'
-
 services:
+  # Tailwind CSS ビルド用サービス
+  tailwind:
+    image: node:22-alpine
+    container_name: tailwind_builder
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "npm install && npx @tailwindcss/cli -i ./input.css -o ./dist/output.css --watch"
+
+  # Nginx Webサーバー用サービス
   frontend:
     image: nginx:alpine
     container_name: weather_frontend
@@ -8,3 +17,5 @@ services:
       - "8080:80"
     volumes:
       - .:/usr/share/nginx/html
+    depends_on:
+      - tailwind

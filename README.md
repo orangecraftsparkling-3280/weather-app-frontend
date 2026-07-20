@@ -26,8 +26,7 @@
 ```bash
 git clone https://github.com/orangecraftsparkling-3280/weather-app-frontend.git
 cd weather-app-frontend
-npm install
-npm run dev
+docker compose up -d
 ```
 
 ## 実行環境
