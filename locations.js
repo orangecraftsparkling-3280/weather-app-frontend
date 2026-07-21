@@ -1,4 +1,4 @@
-const JAPAN_LOCATIONS = [
+export const JAPAN_LOCATIONS = [
   // 北海道・東北
   { name: "札幌", lat: 43.0621, lon: 141.3544 },
   { name: "仙台", lat: 38.2688, lon: 140.8719 },
@@ -23,3 +23,4 @@ const JAPAN_LOCATIONS = [
   { name: "福岡", lat: 33.5902, lon: 130.4017 },
   { name: "那覇", lat: 26.2124, lon: 127.6809 },
 ];
+
