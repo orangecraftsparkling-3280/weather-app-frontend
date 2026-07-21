@@ -104,7 +104,6 @@ export default class WeatherApp {
       return;
     }
 
-    // ★ 連打防止ガード：すでに disabled（処理中）なら即時リターン
     if (this.geoBtn) {
       if (this.geoBtn.disabled) return;
       this.geoBtn.disabled = true;
@@ -116,6 +115,7 @@ export default class WeatherApp {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        // コールバック全体を大きな try-catch-finally で包む
         try {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
@@ -125,9 +125,13 @@ export default class WeatherApp {
             const addressName = await this.weatherService.getAddress(lat, lon);
             if (addressName) placeName = addressName;
           } catch (geoErr) {
-            console.warn("地名取得エラー（「現在地」として続行します）:", geoErr);
+            console.warn(
+              "地名取得エラー（「現在地」として続行します）:",
+              geoErr,
+            );
           }
 
+          // APIエラーが起きても確実に catch / finally に飛ぶようにする
           await this.fetchWeather(lat, lon, placeName);
 
           try {
@@ -135,7 +139,7 @@ export default class WeatherApp {
               placeName,
               "JP",
               lat,
-              lon
+              lon,
             );
             if (result) {
               await this.initLocations();
@@ -143,8 +147,10 @@ export default class WeatherApp {
           } catch (dbErr) {
             console.warn("保存エラー:", dbErr);
           }
+        } catch (error) {
+          console.error("現在地天気取得エラー:", error);
         } finally {
-          // 処理完了後に解凍
+          // 正常終了でもAPIエラーでも、確実にボタンを再有効化する
           if (this.geoBtn) this.geoBtn.disabled = false;
         }
       },
@@ -155,8 +161,21 @@ export default class WeatherApp {
           this.locationName.textContent = "場所を選択してください";
         }
         if (this.geoBtn) this.geoBtn.disabled = false;
-      }
+      },
     );
+  }
+
+  async fetchWeather(lat, lon, placeName) {
+    try {
+      if (this.locationName) {
+        this.locationName.textContent = `${placeName}の天気を取得中...`;
+      }
+      const data = await this.weatherService.getCurrentWeather(lat, lon);
+      this.updateUI(data, placeName);
+    } catch (error) {
+      console.error("天気データ取得エラー:", error);
+      alert("天気データの取得に失敗しました");
+    }
   }
 
   updateUI(data, name) {
@@ -245,6 +264,24 @@ export default class WeatherApp {
       this.bodyEl.classList.remove("brightness-50");
     }
   }
+  updateTodayDate() {
+    if (!this.todayDateEl) return;
+    const today = new Date();
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "short",
+    };
+    // 例: "2026年7月21日(火)" のようにフォーマット
+    this.todayDateEl.textContent = today.toLocaleDateString("ja-JP", options);
+  }
+
+  formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
+
 }
 
 document.addEventListener("DOMContentLoaded", () => new WeatherApp());

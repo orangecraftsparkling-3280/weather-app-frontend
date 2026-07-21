@@ -29,6 +29,19 @@ cd weather-app-frontend
 docker compose up -d
 ```
 
+## 🧪 テスト (Testing)
+
+本プロジェクトでは [Vitest](https://vitest.dev/) および [JSDOM](https://github.com/jsdom/jsdom) を使用し、ロジックの単体テストおよび DOM と連動した統合テストを実装しています。
+
+### テストの実行
+
+```bash
+# 全テストの単発実行
+npm test
+# 開発中に自動でテストを回す場合（ウォッチモード）
+npx vitest
+```
+
 ## 実行環境
 
 - フロントエンド環境
