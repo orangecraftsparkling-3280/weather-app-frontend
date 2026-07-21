@@ -4,10 +4,11 @@ services:
     image: node:22-alpine
     container_name: tailwind_builder
     working_dir: /app
+    tty: true
     volumes:
       - .:/app
-    command: >
-      sh -c "npm install && npx @tailwindcss/cli -i ./input.css -o ./dist/output.css --watch"
+    # 修正ポイント: --poll オプションの追加 ＋ 出力先パスの統一
+    command: npm run dev
 
   # Nginx Webサーバー用サービス
   frontend:

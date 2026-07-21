@@ -242,21 +242,32 @@ export default class WeatherApp {
       alert("画面表示に失敗しました");
     }
   }
-
   updateBackgroundEffect(code) {
-    if (!this.bodyEl) return;
+    if (!this.bodyEl) {
+      console.log("bodyEl が存在しません！");
+      return;
+    } // ★ ここで if ブロックを閉じます
+
     const hour = new Date().getHours();
     const isNight = hour >= 19 || hour < 5;
 
-    let gradient = "";
-    if (code === 0 || code === 1) gradient = "from-yellow-100 to-yellow-400";
-    else if (code === 2 || code === 3) gradient = "from-slate-200 to-slate-500";
-    else if (code >= 51 && code <= 65) gradient = "from-blue-200 to-blue-600";
-    else if (code >= 71 && code <= 77) gradient = "from-sky-100 to-blue-200";
-    else if (code >= 95) gradient = "from-purple-300 to-indigo-900";
-    else gradient = "from-blue-100 to-indigo-200";
+    // クラス名を完全に記述した変数を用意（Tailwind CLI が検知できるようにする）
+    let gradientClasses = "from-blue-100 to-indigo-200";
 
-    this.bodyEl.className = `min-h-screen flex items-center justify-center p-4 transition-all duration-1000 bg-gradient-to-br ${gradient}`;
+    if (code === 0 || code === 1) {
+      gradientClasses = "from-yellow-100 to-yellow-400";
+    } else if (code === 2 || code === 3) {
+      gradientClasses = "from-slate-200 to-slate-500";
+    } else if (code >= 51 && code <= 65) {
+      gradientClasses = "from-blue-200 to-blue-600";
+    } else if (code >= 71 && code <= 77) {
+      gradientClasses = "from-sky-100 to-blue-200";
+    } else if (code >= 95) {
+      gradientClasses = "from-purple-300 to-indigo-900";
+    }
+
+    // クラスを適用
+    this.bodyEl.className = `min-h-screen flex items-center justify-center p-4 transition-all duration-1000 bg-gradient-to-br ${gradientClasses}`;
 
     if (isNight) {
       this.bodyEl.classList.add("brightness-50");
@@ -264,6 +275,7 @@ export default class WeatherApp {
       this.bodyEl.classList.remove("brightness-50");
     }
   }
+
   updateTodayDate() {
     if (!this.todayDateEl) return;
     const today = new Date();
@@ -273,7 +285,6 @@ export default class WeatherApp {
       day: "numeric",
       weekday: "short",
     };
-    // 例: "2026年7月21日(火)" のようにフォーマット
     this.todayDateEl.textContent = today.toLocaleDateString("ja-JP", options);
   }
 
@@ -281,7 +292,6 @@ export default class WeatherApp {
     const date = new Date(dateStr);
     return `${date.getMonth() + 1}/${date.getDate()}`;
   }
-
 }
 
 document.addEventListener("DOMContentLoaded", () => new WeatherApp());
